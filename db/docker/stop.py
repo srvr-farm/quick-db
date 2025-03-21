@@ -2,6 +2,7 @@
 
 from os import path
 from subprocess import check_call, check_output, CalledProcessError
+from plumbum import local as sh, FG
 
 
 HERE = path.dirname(path.realpath(__file__))
@@ -12,10 +13,11 @@ if path.isfile(CID_FILE) is not True:
     print('Nothing to stop.')
     exit(0)
 
-cid = check_output(['cat', CID_FILE])
+with open(CID_FILE, 'r') as fd:
+    cid = fd.readlines()[0].strip()
 
 try:
-    check_call('docker container stop {}'.format(cid).split())
+    sh['docker']['container']['stop'][cid] & FG
 except CalledProcessError as pex:
     print('Error stopping mongo container: {}'.format(cid))
     print('message: {}'.format(pex.message))

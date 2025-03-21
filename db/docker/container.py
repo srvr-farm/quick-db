@@ -1,6 +1,9 @@
+#!/usr/bin/env python3
+
 from os import path
 import logging
 from subprocess import check_call, check_output, CalledProcessError
+from plumbum import local as sh, FG
 
 logger = logging.getLogger(__name__)
 
@@ -13,42 +16,51 @@ BUILD = path.join(HERE, 'build.py')
 def cid():
     try:
         if path.isfile(CID_FILE):
-            return check_output(['cat', CID_FILE]).strip()
+            return sh['cat'][CID_FILE]().strip()
     except CalledProcessError as pex:
         logger.error('Exception throw while retrieving mongodb container id.')
         logger.error('Returncode: {}'.format(pex.returncode))
         logger.error('Message: {}'.format(pex.message))
+        return 1
 
 def new():
     try:
         if path.isfile(CID_FILE):
-            check_call(['rm', '-f', CID_FILE])
+            sh['rm']['-f'][CID_FILE]()
         start()
-    except CalledProcessError as pex:
-        logger.error('Exception thrown while removing old container id.')
-        logger.error('Returncode: {}'.format(pex.returncode))
-        logger.error('Message: {}'.format(pex.message))
+        return 0
+    except Exception as err:
+        logger.error(f"Exception thrown while attempting to create mongodb container\n{err}")
+        return 1
 
 def start():
     try:
-        return check_output([START])
-    except CalledProcessError as pex:
-        logger.error('Exception thrown while attempting to start mongodb container.')
-        logger.error('Returncode: {}'.format(pex.returncode))
-        logger.error('Message: {}'.format(pex.message))
+        sh[START] & FG
+        return 0
+    except Exception as err:
+        logger.error(f"Exception thrown while attempting to start mongodb container\n{err}")
+        return 1
 
 def stop():
     try:
-        return check_output([STOP])
-    except CalledProcessError as pex:
-        logger.error('Exception thrown while attempting to stop mongodb container.')
-        logger.error('Returncode: {}'.format(pex.returncode))
-        logger.error('Message: {}'.format(pex.message))
+        sh[STOP] & FG
+        return 0
+    except Exception as err:
+        logger.error(f"Exception thrown while attempting to stop mongodb container\n{err}")
+        return 1
 
 def build():
     try:
-        return check_call([BUILD])
-    except CalledProcessError as pex:
-        logger.error('Exception thrown while attempting to build mongodb docker image.')
-        logger.error('Returncode: {}'.format(pex.returncode))
-        logger.error('Message: {}'.format(pex.returncode))
+        sh[BUILD] & FG
+        return 0
+    except Exception as err:
+        logger.error(f"Exception thrown while attempting to build mongodb container\n{err}")
+        return 1
+
+def reset():
+    stop()
+    container_id = cid()
+    if container_id:
+        logger.info(f"Removing existing container with id: {container_id}")
+        sh["docker"]["rm"]["if"][container_id] & FG
+    return new()

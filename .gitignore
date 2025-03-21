@@ -3,3 +3,5 @@ venv/
 db/docker/.mongocid
 mddb.egg-info
 .idea
+build
+qdb.egg-info

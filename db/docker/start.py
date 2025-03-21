@@ -2,7 +2,9 @@
 
 from os import path
 from subprocess import check_output, check_call, CalledProcessError
+from plumbum import local as sh
 import yaml
+from yaml import Loader
 
 HERE = path.dirname(path.realpath(__file__))
 CID_FILE = path.join(HERE, '.mongocid')
@@ -14,7 +16,9 @@ cfg = {}
 
 # Check for existing container Id
 if path.isfile(CID_FILE):
-    cid = check_output(['cat', CID_FILE])
+    cid = sh['cat'][CID_FILE]().strip()
+    if cid == '':
+        cid = None
 
 # If we got a container Id, start that container
 if cid is not None:
@@ -33,8 +37,8 @@ data_volume = None
 config_volume = None
 
 # Load config
-with file(CFG_FILE, 'r') as cfgfd:
-    cfg = yaml.load(cfgfd)
+with open(CFG_FILE, 'r') as cfgfd:
+    cfg = yaml.load(cfgfd, Loader)
 
 if cfg is not None:
     if 'port' in cfg and cfg['port'] is not None:
@@ -46,12 +50,13 @@ if cfg is not None:
 
 # Start new container
 run='docker run -p {}:27017'.format(port)
+run = sh["docker"]["run"]["-p"][f"{port}:27017"]
 if data_volume is not None:
-    run = '{} -v {}:/data/db'.format(run, data_volume)
+    run = run["-v"][f"{data_volume}:/data/db"]
 if config_volume is not None:
-    run = '{} -v {}:/data/configdb'.format(run, config_volume)
+    run = run["-v"][f"{config_volume}:/data/configdb"]
 
-run = '{} -d mongo:latest'.format(run)
+run = run["-d"]["mongo:latest"]
 
 # Remove existing CID file
 if path.isfile(CID_FILE):
@@ -59,7 +64,7 @@ if path.isfile(CID_FILE):
 
 cid = None
 try:
-    cid = check_output(run.split())
+    cid = run().strip()
 except CalledProcessError as pex:
     print('Error starting mongo docker container')
     print('cmd: "{}"'.format(run))
@@ -67,7 +72,8 @@ except CalledProcessError as pex:
 
 # Save the new container Id
 if cid is not None:
-    with file(CID_FILE, 'w') as cidfd:
+    with open(CID_FILE, 'w') as cidfd:
         cidfd.write(cid)
+    print(cid)
 
 exit(0)

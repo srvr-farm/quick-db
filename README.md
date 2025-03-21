@@ -10,20 +10,20 @@ Requirements:
 
 Print the mongodb docker container id (if any) for the current mongodb instance
 
-    mdbcid
+    qdb-cid
 
 Build the docker image using the Dockerfile
 
-    mdbbuild
+    qdb-build
 
 Create a docker container for mongodb if it doesn't already exist, then start the mongodb docker container.
 If a container already exists it will by default be reused. If a container is already running, no-op.
 
-    mdbstart
+    qdb-start
 
 Stops a running mongodb docker container if one is running.
 
-    mdbstop
+    qdb-stop
 
 # Config #
 

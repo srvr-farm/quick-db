@@ -23,7 +23,8 @@ setup(
     long_description='See short description.',
     install_requires=[
         'PyYAML',
-        'pymongo'
+        'pymongo',
+        'plumbum'
     ],
     zip_safe=False,
     entry_points = {
@@ -32,7 +33,7 @@ setup(
             'qdb-start=db.docker.container:start',
             'qdb-stop=db.docker.container:stop',
             'qdb-cid=db.docker.container:cid',
-            'qdb-new=db.docker.container:clear'
+            'qdb-reset=db.docker.container:reset'
         ]},
     classifiers=[
         'Development Status :: 3 - Alpha',
