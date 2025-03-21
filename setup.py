@@ -4,11 +4,11 @@ from os.path import dirname, join
 from setuptools import setup, find_packages
 
 
-package_name = 'portabledb'
+package_name = 'qdb'
 
 setup(
     name=package_name,
-    version='0.0.1-0',
+    version='0.0.1',
     description='Portable Mongo Docker Database',
     author='Mark Callan',
     author_email='mark.l.callan@gmail.com',
@@ -28,11 +28,11 @@ setup(
     zip_safe=False,
     entry_points = {
         'console_scripts': [
-            'mdbbuild=db.docker.container:build',
-            'mdbstart=db.docker.container:start',
-            'mdbstop=db.docker.container:stop',
-            'mdbcid=db.docker.container:cid',
-            'mdbnew=db.docker.container:clear'
+            'qdb-build=db.docker.container:build',
+            'qdb-start=db.docker.container:start',
+            'qdb-stop=db.docker.container:stop',
+            'qdb-cid=db.docker.container:cid',
+            'qdb-new=db.docker.container:clear'
         ]},
     classifiers=[
         'Development Status :: 3 - Alpha',

@@ -1,4 +1,4 @@
-# Portable Mongo DB #
+# Quick DB - A Portable Mongo DB manager
 
 Requirements:
 - Docker
