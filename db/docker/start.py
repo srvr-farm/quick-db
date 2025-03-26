@@ -9,6 +9,7 @@ from yaml import Loader
 HERE = path.dirname(path.realpath(__file__))
 CID_FILE = path.join(HERE, '.mongocid')
 CFG_FILE = path.join(HERE, 'config.yaml')
+MONGD_CONFIG_FILE = path.join(HERE, "mongod.conf")
 
 cid = None
 result = None
@@ -22,14 +23,17 @@ if path.isfile(CID_FILE):
 
 # If we got a container Id, start that container
 if cid is not None:
-    exit(check_call(
-        'docker container start {}'.format(cid).split()
-    ))
+    try:
+        sh["docker"]["inspect"][cid]()
+        sh["docker"]["container"]["start"][cid]()
+        exit(0)
+    except Exception as err:
+        print(f"Container ID {cid} doesn't exist")
+        sh["rm"]["-f"][CID_FILE]()
 
 # Check if the container was started...
 if result is not None and result == 0:
     exit(0)
-
 
 
 port = 27017
@@ -51,12 +55,16 @@ if cfg is not None:
 # Start new container
 run='docker run -p {}:27017'.format(port)
 run = sh["docker"]["run"]["-p"][f"{port}:27017"]
+
 if data_volume is not None:
     run = run["-v"][f"{data_volume}:/data/db"]
 if config_volume is not None:
     run = run["-v"][f"{config_volume}:/data/configdb"]
 
-run = run["-d"]["mongo:latest"]
+run = run["-v"][f"{MONGD_CONFIG_FILE}:/etc/mongod.conf"]
+run = run["--restart"]["always"]
+run = run["-d"]["registry.srvr.farm/mongo:latest"]
+run = run["--config"]["/etc/mongod.conf"]
 
 # Remove existing CID file
 if path.isfile(CID_FILE):

@@ -62,5 +62,5 @@ def reset():
     container_id = cid()
     if container_id:
         logger.info(f"Removing existing container with id: {container_id}")
-        sh["docker"]["rm"]["if"][container_id] & FG
+        sh["docker"]["rm"]["-f"][container_id] & FG
     return new()
